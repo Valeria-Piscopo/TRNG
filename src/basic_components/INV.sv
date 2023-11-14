@@ -1,18 +1,21 @@
-timeunit 1ps;
-timeprecision 1ps;
+`timescale 1ps/1ps
 
-module INV #(
-        //parameter int unsigned min_INV_DELAY,
-        parameter int unsigned typ_INV_DELAY
-        //parameter int unsigned max_INV_DELAY
-        )
+module INV 
     (
-     input logic   in,	       
-     output logic  out   	       
+     //`ifdef SIM
+      input int unsigned    delay,    
+     //`endif
+
+     input logic            in,	      
+     output logic           out   	       
    );
 
-   always_comb begin
-    out <= #typ_INV_DELAY !in;
-   end
+    always_comb begin
+        //`ifdef SIM
+          out <= #delay ~in;
+        //`else
+        //  out <= ~in;
+        //`endif
+    end
 
 endmodule : INV
