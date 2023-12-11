@@ -7,8 +7,6 @@ module trng_keccak #(
      input  logic               clk,
      input  logic               rst_n, 
      input  logic[1 : 0]        op_mode,
-     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     // più che op_mode conviene separare gli enable
      // op_mode[0] = 1 TRNG
      // op_mode[1] = 1 KECCAK
      input logic               conditioning,
@@ -36,10 +34,6 @@ module trng_keccak #(
      //output logic               trng_intr
    );
 
-   // out_sig can be the 1600 Keccak output or just the 32 LSB if I want a random key
-   // If I want a key I could also use all the 1600 bits instead of having all zeroes + 32 bits of key
-   // knowing that, if I requested a key, I will need to consider just the last 32 bits
-   // May be useful for side-channel attacks?
 
     logic trng_en_s, start_keccak_s;
     logic error_s, tot_fail_s, key_ready_s;
