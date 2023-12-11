@@ -1,0 +1,47 @@
+{
+    name: "trng_keccak_data",
+    clock_primary: "clk_i",
+    reset_primary: "rst_ni",
+    bus_interfaces: [
+    { protocol: "reg_iface", direction: "device" }
+    ],
+    regwidth: "32",
+    registers: [
+        { multireg:
+          { name: "KECCAK_DIN",
+            desc: "Subword of input of Keccak module",
+            count: "50",
+            cname: "DIN_KECCAK",
+            swaccess: "wo",
+            fields: [
+                { bits: "31:0"
+                }
+            ],
+          }
+        },
+        { multireg:
+          { name: "KECCAK_DOUT",
+            desc: "Subword of Keccak results",
+            count: "50",
+            cname: "dout_KECCAK",
+            swaccess: "ro",
+            hwaccess: "hwo",
+	          hwext: "true",
+            fields: [
+                { bits: "31:0"
+                }
+            ],
+          }
+        },
+        { name: "TRNG_DOUT"
+          desc: "Random key"
+        	  swaccess: "ro",
+        	  hwaccess: "hwo",
+        	  hwext : "true",
+        	  fields: [
+        	      { bits: "31:0"
+        	      }
+            ]
+        }
+    ],
+}

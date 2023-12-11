@@ -1,0 +1,47 @@
+{
+    name: "trng_keccak_ctrl",
+    clock_primary: "clk_i",
+    reset_primary: "rst_ni",
+    bus_interfaces: [
+    { protocol: "reg_iface", direction: "device" }
+    ],
+    regwidth: "32",
+    registers: [
+            { name: "CTRL"
+        	  desc: "Choose mode of operation of Keccak+TRNG block"
+        	  swaccess: "wo",
+        	  hwaccess: "hro",
+        	  fields: [
+        	      { bits: "0", name: "TRNG_EN",
+                    desc: "If set, key requested"
+        	      }
+
+                  { bits: "1", name: "KECCAK_EN",
+                    desc: "If set, Keccak out requested"
+        	      }
+
+                  { bits: "2", name: "CONDITIONING",
+        		    desc: "If set, out key from TRNG is conditioned by Keccak"
+        	      }
+                  
+				  //could be replaced by qre signal of data_reg (hwext)
+				  { bits: "3", name: "ACK_KEY_READ",
+        		    desc: "If set, TRNG output key read"
+        	      }
+        	  ]	
+        	},
+        	{ name: "STATUS"
+        	  desc: " Contains status information about Keccak/TRNG"
+        	  swaccess: "ro",
+        	  hwaccess: "hwo",
+        	  fields: [
+        	      { bits: "0", name: "KECCAK",
+        		    desc: "If set output of keccack is valid"
+        	      }
+				  { bits: "1", name: "TRNG",
+        		    desc: "If set output of TRNG is valid"
+        	      }
+        	  ]	
+            }
+        ],
+}
