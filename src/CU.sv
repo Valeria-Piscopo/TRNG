@@ -128,7 +128,7 @@ module CU
               end else if(key_ack) begin
                   key_flush_o <= 1;
                   rnd_ready_o  <= 0;
-                  trng_intr <= 0
+                  trng_intr <= 0;
                   next_state_trng   <= WAIT;
              end else begin
                  key_flush_o <= 0;
