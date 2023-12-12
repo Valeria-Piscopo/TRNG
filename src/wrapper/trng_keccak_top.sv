@@ -15,9 +15,9 @@ module trng_keccak_top
 	output 	    obi_resp_t slave_resp_o,
     // APB interface (ctrl mem)
 	input 	    reg_req_t reg_req_i,
-    output 	    reg_rsp_t reg_rsp_o,
+        output 	    reg_rsp_t reg_rsp_o,
   
-    output      flush_key_reg, //trng_intr_o?
+        output      trng_intr_o,
 	output 	    keccak_intr_o
 );
 
@@ -99,17 +99,20 @@ module trng_keccak_top
 		.rst_n(rst_ni),
         .op_mode(op_mode),
         .conditioning(reg_file_to_ip_ctrl.conditioning),
+        // when simulating check if ack_key_read and 
+        // ip_to_reg_file_data.trng_dout.re have the same behaviour
         .ack_key_read(reg_file_to_ip_ctrl.ack_key_read),
-		.keccak_in(din_keccak),
+       .keccak_in(din_keccak),
         .key_ready(ip_to_reg_file_ctrl.status.trng.d),
-        .flush_key_reg(flush_key_reg),
+        .trng_intr(trng_intr_o),
         .key_out(out_key),
-		.status_d(ip_to_reg_file_ctrl.status.keccak.d),
-		.status_de(ip_to_reg_file_ctrl.status.keccak.de),
-		.keccak_intr(keccak_intr_o),
+	.status_d(ip_to_reg_file_ctrl.status.keccak.d),
+	.status_de(ip_to_reg_file_ctrl.status.keccak.de),
+	.keccak_intr(keccak_intr_o),
         .keccak_out(dout_keccak)
 	);
    
     assign ip_to_reg_file_data.keccak_dout = dout_keccak;
     assign ip_to_reg_file_data.trng_dout = out_key;
+
 endmodule : trng_keccak_top
