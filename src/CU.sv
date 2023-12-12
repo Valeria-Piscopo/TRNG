@@ -9,7 +9,7 @@ module CU
      input  logic       clk_i,
 
      // TRNG inputs        
-     input  logic	    trng_error,
+     input  logic	trng_error,
      input  logic       key_ack,
      input  logic       total_failure,
 
