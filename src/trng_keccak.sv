@@ -7,6 +7,8 @@ module trng_keccak #(
      input  logic               clk,
      input  logic               rst_n, 
      input  logic[1 : 0]        op_mode,
+     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     // più che op_mode conviene separare gli enable
      // op_mode[0] = 1 TRNG
      // op_mode[1] = 1 KECCAK
      input logic               conditioning,
@@ -21,7 +23,7 @@ module trng_keccak #(
 
      // TRNG out signals
      output logic               key_ready,
-     output logic               flush_key_reg, //could be the interrupt??
+     output logic               trng_intr,
      output logic[7 : 0]        key_out,
 
      // Keccak out signals
@@ -29,13 +31,9 @@ module trng_keccak #(
      output logic               status_de,
      output logic               keccak_intr,
      output logic[1599 : 0]     keccak_out
-
-     // MUST BE ADDED 
-     //output logic               trng_intr
    );
 
-
-    logic trng_en_s, start_keccak_s;
+    logic trng_en_s, start_keccak_s, flush_key_reg_s;
     logic error_s, tot_fail_s, key_ready_s;
     logic error_after_cond, tot_fail_after_cond;
     logic[7 : 0] out_key_s;  
@@ -59,7 +57,7 @@ module trng_keccak #(
         .out_key(out_key_s)
     );
 
-    assign key_out = (key_ready_s)? out_key_s : 8'b0;
+    assign key_out = (key_ready_s && (!flush_key_reg_s))? out_key_s : 8'b0;
 
     //shift register oppure accesso al register file da parte di trng??
     
@@ -100,8 +98,9 @@ module trng_keccak #(
       //TRNG out
       .trng_en_o(trng_en_s),
       .trng_dff_en_o(dff_en_s),
-      .key_flush_o(flush_key_reg),
+      .key_flush_o(flush_key_reg_s),
       .rnd_ready_o(key_ready_s),
+      .trng_intr(trng_intr),
       //Keccak out
       .start_keccak_o(start_keccak_s),
       .status_d_kec(status_d_s),
