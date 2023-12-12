@@ -23,6 +23,7 @@ module CU
      output logic       trng_dff_en_o,
      output logic       key_flush_o, // The flush must be done "manually" from hw side
      output logic       rnd_ready_o,
+     output logic       trng_intr,
 
      // Keccak outputs
      output logic       start_keccak_o,
@@ -98,11 +99,12 @@ module CU
 
         case(curr_state_trng)
           IDLE: begin
+              trng_intr <= 0;
               if(op_mode[0]) begin
-                  trng_en_o  <= 1'b1;
-                  key_flush_o <= 1'b1;
-                  rnd_ready_o  <= 1'b0;
-                  trng_dff_en_o     <= 1'b1;
+                  trng_en_o  <= 1;
+                  key_flush_o <= 1;
+                  rnd_ready_o  <= 0;
+                  trng_dff_en_o     <= 1;
                   next_state_trng   <= BIST;
               end else begin
                 next_state_trng <= IDLE;
@@ -120,23 +122,26 @@ module CU
 
           ES32: begin
               if(trng_error) begin
-                  rnd_ready_o <= 1'b0;
+                  rnd_ready_o <= 0;
+                  trng_intr <= 0;
                   next_state_trng  <= BIST;
               end else if(key_ack) begin
-                  key_flush_o <= 1'b1;
-                  rnd_ready_o  <= 1'b0;
+                  key_flush_o <= 1;
+                  rnd_ready_o  <= 0;
+                  trng_intr <= 0
                   next_state_trng   <= WAIT;
              end else begin
-                 key_flush_o <= 1'b0;
-                 rnd_ready_o  <= 1'b1;
+                 key_flush_o <= 0;
+                 trng_intr   <= 1;
+                 rnd_ready_o  <= 1;
                  if(conditioning) begin
                   keccak_flag_trng = 1;
                  end
                  next_state_trng  <= ES32;
              end
 
-             trng_en_o   <= 1'b1;
-             trng_dff_en_o  <= 1'b1;
+             trng_en_o   <= 1;
+             trng_dff_en_o  <= 1;
            end
 
            //depends on latency of the system, if 32 bits of randomness ready in one clock cycle, state not even needed
@@ -150,30 +155,32 @@ module CU
                  next_state_trng  <= WAIT;
              end
                
-             trng_en_o   <= 1'b1;
-             trng_dff_en_o  <= 1'b1;
-             rnd_ready_o   <= 1'b0;
+             trng_en_o   <= 1;
+             trng_dff_en_o  <= 1;
+             rnd_ready_o   <= 0;
              if(key_ack) begin
-                 key_flush_o <= 1'b1;
+                 key_flush_o <= 1;
              end else begin
-                 key_flush_o <= 1'b0;
+                 key_flush_o <= 0;
              end
          end
 
          DEAD: begin
              next_state_trng   <= DEAD;
-             trng_en_o  <= 1'b0;
-             trng_dff_en_o <= 1'b0;
-             rnd_ready_o  <= 1'b0;
-             key_flush_o <= 1'b1;
+             trng_en_o  <= 0;
+             trng_dff_en_o <= 0;
+             rnd_ready_o  <= 0;
+             trng_intr   <= 1;
+             key_flush_o <= 1;
          end    
 
          default: begin
             next_state_trng    <= BIST;
-            trng_en_o   <= 1'b0;
-            trng_dff_en_o <= 1'b0;
-            rnd_ready_o   <= 1'b0;
-            key_flush_o  <= 1'b0; 
+            trng_en_o   <= 0;
+            trng_dff_en_o <= 0;
+            rnd_ready_o   <= 0;
+            trng_intr   <= 0;
+            key_flush_o  <= 0; 
          end
         endcase
 
