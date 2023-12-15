@@ -23,22 +23,25 @@ filesets:
     - src/RO.sv
     - src/top_level_RO.sv
     - src/health_test.sv
+    - src/trng_cu.sv
     - src/trng.sv
-    - src/CU.sv
+    - ../vlsi_polito_keccak/hw/rtl/keccak_cu.sv
     - src/trng_keccak.sv
     - src/wrapper/trng_keccak_top.sv
     file_type: systemVerilogSource
+
+    ## SEPARATE CORE FOR KECCAK AND DEPENDENCY??
 
   files_rtl_vhdl:
     depend:
     - x-heep::packages
     - pulp-platform.org::common_cells
     files:
-    - vlsi_polito_keccak/hw/rtl/keccak_globals.vhd
-    - vlsi_polito_keccak/hw/rtl/keccak_round_constants_gen.vhd
-    - vlsi_polito_keccak/hw/rtl/keccak_round.vhd
-    - vlsi_polito_keccak/hw/rtl/keccak_datapath.vhd
-    - vlsi_polito_keccak/hw/rtl/keccak.vhd
+    - ../vlsi_polito_keccak/hw/rtl/keccak_globals.vhd
+    - ../vlsi_polito_keccak/hw/rtl/keccak_round_constants_gen.vhd
+    - ../vlsi_polito_keccak/hw/rtl/keccak_round.vhd
+    - ../vlsi_polito_keccak/hw/rtl/keccak_datapath.vhd
+    - ../vlsi_polito_keccak/hw/rtl/keccak.vhd
     file_type: vhdlSource    
     
 targets:
@@ -46,4 +49,3 @@ targets:
     filesets:
     - files_rtl_sv
     - files_rtl_vhdl
-
