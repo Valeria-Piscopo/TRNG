@@ -7,8 +7,6 @@ module trng_keccak #(
      input  logic               clk,
      input  logic               rst_n, 
      input  logic[1 : 0]        op_mode,
-     //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     // più che op_mode conviene separare gli enable
      // op_mode[0] = 1 TRNG
      // op_mode[1] = 1 KECCAK
      input logic               conditioning,
@@ -24,7 +22,7 @@ module trng_keccak #(
      // TRNG out signals
      output logic               key_ready,
      output logic               trng_intr,
-     output logic[7 : 0]        key_out,
+     output logic[31 : 0]       key_out,
 
      // Keccak out signals
      output logic               status_d,
@@ -36,78 +34,51 @@ module trng_keccak #(
     logic trng_en_s, start_keccak_s, flush_key_reg_s;
     logic error_s, tot_fail_s, key_ready_s;
     logic error_after_cond, tot_fail_after_cond;
-    logic[7 : 0] out_key_s;  
+    logic[31 : 0] out_key_s;  
     logic[1599 : 0] out_sig;
     logic permutation_computed, status_d_s;
- 
-    // !!!!!!!!!!!
-    // key_ready_s dopo un po' si dovrebbe abbassare se va come start di keccak ?
-
-    trng #(.N_STAGES(N_STAGES), .RO_LENGTH(RO_LENGTH)) trng (
+    
+    
+    trng #(.N_STAGES(N_STAGES), .RO_LENGTH(RO_LENGTH)) i_trng (
         `ifdef SIM
         .inv_delay(inv_delay),
         `endif
         .enable(op_mode[0]),
-        .dff_en(dff_en_s),
         .clk(clk),
         .rst_n(rst_n),
         .ack_read(ack_key_read),
-        .error(error_s),
-        .total_fail(tot_fail_s),
-        .out_key(out_key_s)
+        .key_ready(key_ready_s),
+        .out_key(out_key_s),
+        .trng_intr(trng_intr)
     );
 
-    assign key_out = (key_ready_s && (!flush_key_reg_s))? out_key_s : 8'b0;
-
-    //shift register oppure accesso al register file da parte di trng??
+    assign key_ready = conditioning? status_d_s: key_ready_s;
+    assign key_out = conditioning? out_sig[31 : 0] : out_key_s;
     
-    keccak_dp i_keccak (
+    keccak i_keccak (
 		.clk(clk),
 		.rst_n(rst_n),
-		.start_i(start_keccak_s), //timing degli op_mode gestito dall'esterno?
-		.din((conditioning)? out_key_s : keccak_in),
-        .ready_o(permutation_computed),
-		.dout(out_sig)
+		.start(conditioning? key_ready_s : op_mode[1]), //timing degli op_mode gestito dall'esterno?
+		.din(conditioning? out_key_s : keccak_in),
+		.dout(out_sig),
+		.status_d(status_d_s),
+		.status_de(status_de),
+		.keccak_intr(keccak_intr)
 	);
-
-    health_test #(.NBITS(1600), .CUTOFF(589), .FAIL_THRESH(11)) test_after_keccak (
-        .samples(out_sig),
-        .clk(clk),
-        .error(error_after_cond),
-        .total_failure(tot_fail_after_cond)
-    ); 
-    // If errors after keccak, compute another key
 
     //Masking???
     //assign keccak_out = status_d_s? out_sig : 1600'b0;
     assign keccak_out = out_sig;
-
-    CU top_CU (
-      .op_mode(op_mode),
-      .conditioning(conditioning),
-      .rst_ni(rst_n),
-      .clk_i(clk),
-      //TRNG in
-      .trng_error(error_s),
-      .key_ack(ack_key_read),
-      .total_failure(tot_fail_s),
-      //Keccak in
-      .keccak_error(error_after_cond),
-      .ready_dpkeccak_i(permutation_computed),
-      .total_failure_keccak(tot_fail_after_cond),
-      //TRNG out
-      .trng_en_o(trng_en_s),
-      .trng_dff_en_o(dff_en_s),
-      .key_flush_o(flush_key_reg_s),
-      .rnd_ready_o(key_ready_s),
-      .trng_intr(trng_intr),
-      //Keccak out
-      .start_keccak_o(start_keccak_s),
-      .status_d_kec(status_d_s),
-      .status_de_kec(status_de),
-      .keccak_intr(keccak_intr)
-    );
-
-    assign key_ready = key_ready_s;
     assign status_d = status_d_s;
+
+    //health_test #(.NBITS(1600), .CUTOFF(589), .FAIL_THRESH(11)) test_after_keccak (
+    //.samples(out_sig),
+    //.clk(clk),
+    //.error(error_after_cond),
+    //.total_failure(tot_fail_after_cond)
+    //);
+
+    // 1) GESTIRE error_after_cond/tot_fail_after_cond
+
+
 endmodule : trng_keccak
