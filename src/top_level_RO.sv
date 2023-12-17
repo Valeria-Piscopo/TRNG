@@ -3,9 +3,6 @@ module top_level_RO #(
         parameter int unsigned RO_LENGTH = 64
         )
     (
-        `ifdef SIM
-         input  int unsigned inv_delay[N_STAGES][RO_LENGTH],    
-        `endif
          input  logic                        RO_en,
          input  logic                        dff_en,	 
          input  logic                        rst_ni,      	
@@ -22,29 +19,36 @@ module top_level_RO #(
     logic[7 : 0] random_seq_tmp1;
     logic[7 : 0] random_seq_tmp2;
     logic unused_port;
+
+    `ifdef SIM
+     int unsigned inv_delay[N_STAGES][RO_LENGTH]; 
+    `endif
     
     genvar i;
     generate
         for (i = 0; i < N_STAGES - 1; i++) begin
+
             RO #(.RO_LENGTH(RO_LENGTH)) RO_i( 
-                `ifdef SIM
-                .inv_delay(inv_delay[i]),    
-                `endif
                 .RO_enable(RO_en), 
-                .random_bit(last_out[i]),
+                .random_bit(last_out[i]), 
                 .parallel_out(parallel_out[i])
                 ); /* synthesis keep */   
+            
+            `ifdef SIM
+             assign RO_i.inv_delay = inv_delay[i];
+            `endif
         end
     endgenerate
 
     RO #(.RO_LENGTH(RO_LENGTH)) sampler( 
-                `ifdef SIM
-                .inv_delay(inv_delay[N_STAGES-1]),    
-                `endif
                 .RO_enable(RO_en), 
                 .random_bit(unused_port),
                 .parallel_out(RO_clk)
     ); /* synthesis keep */   
+
+    `ifdef SIM
+     assign sampler.inv_delay = inv_delay[N_STAGES-1];
+    `endif
 
     `ifndef PARALLEL_OUT 
         REG #(.NBITS(N_STAGES - 1)) sampling_reg(

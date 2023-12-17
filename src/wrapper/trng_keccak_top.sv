@@ -3,21 +3,22 @@ module trng_keccak_top
   import trng_keccak_ctrl_reg_pkg::*;
   import reg_pkg::*;
   import obi_pkg::*;  
+  #(
+    parameter int unsigned N_STAGES = 32,
+    parameter int unsigned RO_LENGTH = 13
+  )
 (
 	input logic clk_i,
 	input logic rst_ni,
-    //`ifdef SIM
-    // input  int unsigned        inv_delay[N_STAGES][RO_LENGTH],    
-    //`endif
-
+    
 	// AHB Slave interface (data memory)
 	input 	    obi_req_t slave_req_i,
 	output 	    obi_resp_t slave_resp_o,
     // APB interface (ctrl mem)
 	input 	    reg_req_t reg_req_i,
-        output 	    reg_rsp_t reg_rsp_o,
+    output 	    reg_rsp_t reg_rsp_o,
   
-        output      trng_intr_o,
+    output      trng_intr_o,
 	output 	    keccak_intr_o
 );
 
@@ -53,7 +54,7 @@ module trng_keccak_top
    );
 
 
-   keccak_data_reg_top #(
+   trng_keccak_data_reg_top #(
 	.reg_req_t(reg_req_t),
 	.reg_rsp_t(reg_rsp_t)
 	) i_data_regfile (
@@ -84,17 +85,21 @@ module trng_keccak_top
 		.hw2reg(ip_to_reg_file_ctrl) 
 	);
 
-
-     
    // wiring signals between control unit and ip
    logic op_mode;
    logic[1599 : 0] din_keccak, dout_keccak;
    logic[31 : 0]   out_key; 
-   
+
+   `ifdef SIM
+    int unsigned inv_delay[N_STAGES][RO_LENGTH];  
+    assign i_keccak_trng.inv_delay = inv_delay;
+   `endif
+
    assign op_mode = {reg_file_to_ip_ctrl.keccak_en, reg_file_to_ip_ctrl.trng_en};
    assign din_keccak = reg_file_to_ip_data.keccak_din;	
 
-	trng_keccak i_keccak_trng (
+   
+	trng_keccak i_keccak_trng #(.N_STAGES(N_STAGES), .RO_LENGTH(RO_LENGTH))(
 		.clk(clk_i),
 		.rst_n(rst_ni),
         .op_mode(op_mode),
@@ -102,13 +107,13 @@ module trng_keccak_top
         // when simulating check if ack_key_read and 
         // ip_to_reg_file_data.trng_dout.re have the same behaviour
         .ack_key_read(reg_file_to_ip_ctrl.ack_key_read),
-       .keccak_in(din_keccak),
+		.keccak_in(din_keccak),
         .key_ready(ip_to_reg_file_ctrl.status.trng.d),
         .trng_intr(trng_intr_o),
         .key_out(out_key),
-	.status_d(ip_to_reg_file_ctrl.status.keccak.d),
-	.status_de(ip_to_reg_file_ctrl.status.keccak.de),
-	.keccak_intr(keccak_intr_o),
+		.status_d(ip_to_reg_file_ctrl.status.keccak.d),
+		.status_de(ip_to_reg_file_ctrl.status.keccak.de),
+		.keccak_intr(keccak_intr_o),
         .keccak_out(dout_keccak)
 	);
    

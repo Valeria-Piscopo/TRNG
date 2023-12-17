@@ -3,9 +3,6 @@ module trng #(
     parameter int unsigned RO_LENGTH = 64
   )
     (
-    `ifdef SIM
-     input  int unsigned inv_delay[N_STAGES][RO_LENGTH],    
-    `endif
      input  logic               enable,
      input  logic               clk,
      input  logic               rst_n, 
@@ -19,11 +16,12 @@ module trng #(
    logic[7 : 0] random_seq;
    logic rnd_bit;
 
+   `ifdef SIM
+    int unsigned inv_delay[N_STAGES][RO_LENGTH];  
+    assign entropy_src.inv_delay = inv_delay;
+   `endif
   
   top_level_RO #(.N_STAGES(N_STAGES), .RO_LENGTH(RO_LENGTH)) entropy_src (
-    `ifdef SIM
-     .inv_delay(inv_delay),
-    `endif
     //.RO_en(enable_dp_s), 
     //enable_dp_s può essere usato per regolare esattamente la durata 
     //Dell'enable nel caso in cui non sia così da input 
