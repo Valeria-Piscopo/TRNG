@@ -4,7 +4,7 @@ module trng_keccak_top
   import reg_pkg::*;
   import obi_pkg::*;  
   #(
-    parameter int unsigned N_STAGES = 32,
+    parameter int unsigned N_STAGES = 33,
     parameter int unsigned RO_LENGTH = 13
   )
 (
@@ -95,18 +95,18 @@ module trng_keccak_top
     assign i_keccak_trng.inv_delay = inv_delay;
    `endif
 
-   assign op_mode = {reg_file_to_ip_ctrl.keccak_en, reg_file_to_ip_ctrl.trng_en};
+   assign op_mode = {reg_file_to_ip_ctrl.ctrl.keccak_en.q, reg_file_to_ip_ctrl.ctrl.trng_en.q};
    assign din_keccak = reg_file_to_ip_data.keccak_din;	
+  
 
-   
 	trng_keccak #(.N_STAGES(N_STAGES), .RO_LENGTH(RO_LENGTH)) i_keccak_trng (
 		.clk(clk_i),
 		.rst_n(rst_ni),
         .op_mode(op_mode),
-        .conditioning(reg_file_to_ip_ctrl.conditioning),
+        .conditioning(reg_file_to_ip_ctrl.ctrl.conditioning.q),
         // when simulating check if ack_key_read and 
         // ip_to_reg_file_data.trng_dout.re have the same behaviour
-        .ack_key_read(reg_file_to_ip_ctrl.ack_key_read),
+        .ack_key_read(reg_file_to_ip_ctrl.ctrl.ack_key_read.q),
 		.keccak_in(din_keccak),
         .key_ready(ip_to_reg_file_ctrl.status.trng.d),
         .trng_intr(trng_intr_o),
