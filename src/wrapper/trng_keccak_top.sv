@@ -99,7 +99,7 @@ module trng_keccak_top
    assign din_keccak = reg_file_to_ip_data.keccak_din;	
 
    
-	trng_keccak i_keccak_trng #(.N_STAGES(N_STAGES), .RO_LENGTH(RO_LENGTH))(
+	trng_keccak #(.N_STAGES(N_STAGES), .RO_LENGTH(RO_LENGTH)) i_keccak_trng (
 		.clk(clk_i),
 		.rst_n(rst_ni),
         .op_mode(op_mode),
