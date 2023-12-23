@@ -74,7 +74,7 @@ module trng_keccak_top
 	.reg_req_t(reg_req_t),
 	.reg_rsp_t(reg_rsp_t)
 	) i_ctrl_regfile (
-		.clk(clk_i),
+		.clk_i(clk_i),
 		.rst_ni(rst_ni),
 		.devmode_i(1'b1),
 		// From the bus to regfile
