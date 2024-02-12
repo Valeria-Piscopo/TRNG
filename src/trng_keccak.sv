@@ -45,10 +45,10 @@ module trng_keccak #(
         .trng_intr(trng_intr_s)
     );
 
-    `ifdef SIM
+   `ifndef SYNTHESIS
     int unsigned inv_delay[N_STAGES][RO_LENGTH];  
     assign i_trng.inv_delay = inv_delay;
-    `endif
+   `endif
 
     assign trng_intr = conditioning? status_d_s : trng_intr_s;
     assign key_ready = conditioning? status_d_s : key_ready_s;
@@ -57,7 +57,7 @@ module trng_keccak #(
     keccak i_keccak (
 		.clk(clk),
 		.rst_n(rst_n),
-		.start(conditioning? key_ready_s : op_mode[1]), //timing degli op_mode gestito dall'esterno?
+		.start(conditioning? key_ready_s : op_mode[1]),
 		.din(conditioning? out_key_s : keccak_in),
 		.dout(out_sig),
 		.status_d(status_d_s),
@@ -77,7 +77,7 @@ module trng_keccak #(
     //.total_failure(tot_fail_after_cond)
     //);
 
-    // 1) GESTIRE error_after_cond/tot_fail_after_cond
+    // GESTIRE error_after_cond/tot_fail_after_cond
 
 
 endmodule : trng_keccak

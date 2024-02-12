@@ -18,9 +18,9 @@ module top_level_RO #(
     logic[RO_LENGTH - 1 : 0] parallel_out_xor_tree, RO_clk;
     logic[7 : 0] random_seq_tmp1;
     logic[7 : 0] random_seq_tmp2;
-    logic unused_port;
+    logic unused_port, random_bit_s;
 
-    `ifdef SIM
+    `ifndef SYNTHESIS
      int unsigned inv_delay[N_STAGES][RO_LENGTH]; 
     `endif
     
@@ -28,13 +28,13 @@ module top_level_RO #(
     generate
         for (i = 0; i < N_STAGES - 1; i++) begin
 
-            RO #(.RO_LENGTH(RO_LENGTH)) RO_i( 
+            (* keep = "true" *) RO #(.RO_LENGTH(RO_LENGTH)) RO_i( 
                 .RO_enable(RO_en), 
                 .random_bit(last_out[i]), 
                 .parallel_out(parallel_out[i])
                 ); /* synthesis keep */   
-            
-            `ifdef SIM
+
+            `ifndef SYNTHESIS
              assign RO_i.inv_delay = inv_delay[i];
             `endif
         end
@@ -46,11 +46,14 @@ module top_level_RO #(
                 .parallel_out(RO_clk)
     ); /* synthesis keep */   
 
-    `ifdef SIM
+
+    `ifndef SYNTHESIS
      assign sampler.inv_delay = inv_delay[N_STAGES-1];
     `endif
+ 
 
-    `ifndef PARALLEL_OUT 
+    `ifndef PARALLEL_OUT // Serial output 
+
         REG #(.NBITS(N_STAGES - 1)) sampling_reg(
                     .comb_in(last_out),
                     .clk(clk),
@@ -61,16 +64,18 @@ module top_level_RO #(
 
         assign out_xor_tree = ^random_out;
 
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // I can directly use register file?
-    REG #(.NBITS(1)) out_xor_reg(
+        REG #(.NBITS(1)) out_xor_reg(
                 .comb_in(out_xor_tree),
                 .clk(clk),
                 .rst_ni(rst_ni),
                 .dff_en(dff_en),
-                .sample_out(random_bit)
+                .sample_out(random_bit_s)
             );
-    `else 
+
+        assign random_bit = random_bit_s;
+        assign random_seq[0] = random_bit_s;
+
+    `else  // Parallel output
         genvar n_inv_var, n_stages_var;
         generate
             for (n_inv_var = 0; n_inv_var < RO_LENGTH; n_inv_var++) begin

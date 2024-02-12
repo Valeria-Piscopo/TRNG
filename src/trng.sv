@@ -12,11 +12,11 @@ module trng #(
      output logic               trng_intr 
    );
 
-   logic enable_dp_s, error_s, tot_fail_s, dff_en_s, flush_reg_s;
+   logic enable_dp_s, error_s, tot_fail_s, dff_en_s, flush_reg_s, rnd_ready_s;
    logic[7 : 0] random_seq;
    logic rnd_bit;
 
-   `ifdef SIM
+   `ifndef SYNTHESIS
     int unsigned inv_delay[N_STAGES][RO_LENGTH];  
     assign entropy_src.inv_delay = inv_delay;
    `endif
@@ -32,7 +32,7 @@ module trng #(
     .random_bit(rnd_bit),
     .random_seq(random_seq)
   ); 
-
+    // If serial output check only rnd_bit = random_seq[0]
 
   health_test #(.NBITS(8), .CUTOFF(589), .FAIL_THRESH(11)) health_comp (
     .samples(random_seq),
@@ -55,6 +55,7 @@ module trng #(
     .trng_intr(trng_intr)
   );
 
+  
   assign out_key = (rnd_ready_s && (!flush_reg_s))? random_seq : 32'b0;
   assign key_ready = rnd_ready_s;
   

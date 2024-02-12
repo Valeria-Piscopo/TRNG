@@ -60,14 +60,19 @@ module trng_cu
     always_comb begin
      case(curr_state)
         IDLE: begin
-             trng_intr <= 0;
             if(enable_i) begin
+                trng_intr <= 0;
+                rnd_ready_o  <= 0;
                 enable_dp_o  <= 1;
                 flush_regs_o <= 1;
-                rnd_ready_o  <= 0;
                 dff_en_o     <= 1;
                 next_state   <= BIST;
              end else begin
+                trng_intr <= 0;
+                rnd_ready_o  <= 0;
+                enable_dp_o <= 0;
+                flush_regs_o <= 0;
+                dff_en_o <= 0;
                 next_state <= IDLE;
             end
         end
@@ -76,30 +81,48 @@ module trng_cu
             // 10 is an arbitrary choice 
             if (counter_BIST == (latency*10)) begin
                 next_state   <= WAIT;
+                // AGGIUNTO DOPO
+                trng_intr    <= 0;
+                rnd_ready_o  <= 0;
+                enable_dp_o  <= 1;
+                flush_regs_o <= 1;
+                dff_en_o     <= 1;
+                //
             end else begin
+                // AGGIUNTO DOPO
+                trng_intr <= 0;
+                rnd_ready_o  <= 0;
+                enable_dp_o  <= 1;
+                flush_regs_o <= 1;
+                dff_en_o     <= 1;
+                //
                 next_state   <= BIST;
             end
         end
 
         ES32: begin
             if(error_i) begin
-                rnd_ready_o <= 0;
                 trng_intr   <= 0;
+                flush_regs_o <= 1;
+                rnd_ready_o   <= 0;
+                enable_dp_o   <= 1;
+                dff_en_o      <= 1;
                 next_state  <= BIST;
             end else if(ack_read_i) begin
+                trng_intr    <= 0;
                 flush_regs_o <= 1;
                 rnd_ready_o  <= 0;
-                trng_intr    <= 0;
+                enable_dp_o   <= 1;
+                dff_en_o      <= 1;
                 next_state   <= WAIT;
             end else begin
                 flush_regs_o <= 0;
                 trng_intr    <= 1;
                 rnd_ready_o  <= 1;
+                enable_dp_o   <= 1;
+                dff_en_o      <= 1;
                 next_state   <= ES32;
             end
-
-            enable_dp_o   <= 1;
-            dff_en_o      <= 1;
         end
 
         //depends on latency of the system, if 32 bits of randomness ready in one clock cycle, state not even needed
@@ -116,6 +139,7 @@ module trng_cu
             enable_dp_o   <= 1;
             dff_en_o      <= 1;
             rnd_ready_o   <= 0;
+            trng_intr     <= 0;
             if(ack_read_i) begin
                 flush_regs_o <= 1;
             end else begin

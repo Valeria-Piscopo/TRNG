@@ -74,8 +74,8 @@ module trng_keccak_top
 	.reg_req_t(reg_req_t),
 	.reg_rsp_t(reg_rsp_t)
 	) i_ctrl_regfile (
-		.clk_i(clk_i),
-		.rst_ni(rst_ni),
+		.clk_i,
+		.rst_ni,
 		.devmode_i(1'b1),
 		// From the bus to regfile
 		.reg_req_i(reg_req_i),
@@ -86,37 +86,42 @@ module trng_keccak_top
 	);
 
    // wiring signals between control unit and ip
-   logic op_mode;
    logic[1599 : 0] din_keccak, dout_keccak;
    logic[31 : 0]   out_key; 
+   logic key_ready_s;
 
-   `ifdef SIM
+  // `ifdef SIM
+  //  int unsigned inv_delay[N_STAGES][RO_LENGTH];  
+  //  assign i_keccak_trng.inv_delay = inv_delay;
+  // `endif
+  `ifndef SYNTHESIS
     int unsigned inv_delay[N_STAGES][RO_LENGTH];  
     assign i_keccak_trng.inv_delay = inv_delay;
    `endif
 
-   assign op_mode = {reg_file_to_ip_ctrl.ctrl.keccak_en.q, reg_file_to_ip_ctrl.ctrl.trng_en.q};
    assign din_keccak = reg_file_to_ip_data.keccak_din;	
-  
+   
 
 	trng_keccak #(.N_STAGES(N_STAGES), .RO_LENGTH(RO_LENGTH)) i_keccak_trng (
 		.clk(clk_i),
 		.rst_n(rst_ni),
-        .op_mode(op_mode),
-        .conditioning(reg_file_to_ip_ctrl.ctrl.conditioning.q),
+        .op_mode({reg_file_to_ip_ctrl[2], reg_file_to_ip_ctrl[3]}),
+        .conditioning(reg_file_to_ip_ctrl[1]),
         // when simulating check if ack_key_read and 
         // ip_to_reg_file_data.trng_dout.re have the same behaviour
-        .ack_key_read(reg_file_to_ip_ctrl.ctrl.ack_key_read.q),
+        .ack_key_read(reg_file_to_ip_ctrl[0]),
 		.keccak_in(din_keccak),
-        .key_ready(ip_to_reg_file_ctrl.status.trng.d),
+        .key_ready(key_ready_s),
         .trng_intr(trng_intr_o),
         .key_out(out_key),
 		.status_d(ip_to_reg_file_ctrl.status.keccak.d),
 		.status_de(ip_to_reg_file_ctrl.status.keccak.de),
 		.keccak_intr(keccak_intr_o),
         .keccak_out(dout_keccak)
-	);
-   
+	); 
+
+    assign ip_to_reg_file_ctrl.status.trng.de = key_ready_s;
+    assign ip_to_reg_file_ctrl.status.trng.d = key_ready_s;
     assign ip_to_reg_file_data.keccak_dout = dout_keccak;
     assign ip_to_reg_file_data.trng_dout = out_key;
 

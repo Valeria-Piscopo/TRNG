@@ -12,7 +12,7 @@ module health_test #(
 
     logic stuck_at_0, stuck_at_1;
     logic error_adapt = 0;
-    logic acc = 0;
+    (* keep = "true" *) logic acc = 0;
     int unsigned cnt = 0;
     int unsigned consec_error_cnt = 0;
 

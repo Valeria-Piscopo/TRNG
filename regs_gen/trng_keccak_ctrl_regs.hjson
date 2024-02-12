@@ -11,6 +11,7 @@
         	  desc: "Choose mode of operation of Keccak+TRNG block"
         	  swaccess: "wo",
         	  hwaccess: "hro",
+              hwqe: "true",
         	  fields: [
         	      { bits: "0", name: "TRNG_EN",
                     desc: "If set, key requested"

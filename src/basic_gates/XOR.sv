@@ -7,5 +7,3 @@ module XOR (
    assign out = in1^in2;
 
 endmodule : XOR
-
-// INSERT A DELAY?
