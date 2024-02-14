@@ -29,7 +29,7 @@ module trng_cu
         if (!rst_ni) begin    
             curr_state <= IDLE;
             counter_BIST <= 0;
-        end else if(!total_failure) begin
+        end else if(!total_failure || (curr_state == IDLE)) begin
             if (curr_state == BIST) begin 
                 //if error, restart
                 if(error_i) begin
