@@ -6,12 +6,12 @@ module INV
      output logic           out   	       
    );
 
-   `ifdef SIM
+   `ifndef SYNTHESIS
     int unsigned    delay; 
     `endif
 
     always_comb begin
-        `ifdef SIM
+        `ifndef SYNTHESIS
           out <= #delay ~in;
         `else
           out <= ~in;
