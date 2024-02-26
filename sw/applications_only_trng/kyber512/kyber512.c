@@ -1,0 +1,88 @@
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+#include "stats.h"
+#include "csr.h"
+
+#include "api.h"
+#include "randombytes.h"
+#include "params.h"
+#include "../../external/lib/drivers/only_trng/trng_driver_solo.h"
+
+#define NTESTS 5
+
+static void printbytes(const uint8_t *x, size_t xlen) {
+    size_t i;
+    for (i = 0; i < xlen; i++) {
+        printf("%02x", x[i]);
+    }
+    printf("\n");
+}
+
+// https://stackoverflow.com/a/1489985/1711232
+#define PASTER(x, y) x##_##y
+#define EVALUATOR(x, y) PASTER(x, y)
+#define NAMESPACE(fun) EVALUATOR(PQCLEAN_KYBER512_CLEAN, fun)
+
+#define CRYPTO_BYTES           NAMESPACE(CRYPTO_BYTES)
+#define CRYPTO_PUBLICKEYBYTES  NAMESPACE(CRYPTO_PUBLICKEYBYTES)
+#define CRYPTO_SECRETKEYBYTES  NAMESPACE(CRYPTO_SECRETKEYBYTES)
+#define CRYPTO_CIPHERTEXTBYTES NAMESPACE(CRYPTO_CIPHERTEXTBYTES)
+
+#define crypto_kem_keypair NAMESPACE(crypto_kem_keypair)
+#define crypto_kem_enc NAMESPACE(crypto_kem_enc)
+#define crypto_kem_dec NAMESPACE(crypto_kem_dec)
+
+int main(void) {
+    uint8_t key_a[CRYPTO_BYTES], key_b[CRYPTO_BYTES];
+    uint8_t pk[CRYPTO_PUBLICKEYBYTES];
+    uint8_t sendb[CRYPTO_CIPHERTEXTBYTES];
+    uint8_t sk_a[CRYPTO_SECRETKEYBYTES];
+    uint8_t* coins[2 * KYBER_SYMBYTES];
+    uint8_t coins_original[2 * KYBER_SYMBYTES];
+    uint8_t conditioning = 0;
+    // Performance regs variables
+    unsigned int instr, cycles, ldstall, jrstall, imstall;
+    int i, j;
+    for (i = 0; i < NTESTS; i++) {
+       /* // Key-pair generation
+        //enable mcycle csr
+        CSR_CLEAR_BITS(CSR_REG_MCOUNTINHIBIT, 0x1);
+        // Starting the performance counter
+        CSR_WRITE(CSR_REG_MCYCLE, 0);
+        crypto_kem_keypair(pk, sk_a);
+        CSR_READ(CSR_REG_MCYCLE, &cycles);
+        printf("Keypair done!\n Number of clock cycles : %d\n", cycles);
+        printbytes(pk, CRYPTO_PUBLICKEYBYTES);
+        printbytes(sk_a, CRYPTO_SECRETKEYBYTES);
+        printf("\n");
+
+        // Encapsulation
+        crypto_kem_enc(sendb, key_b, pk);
+
+        printbytes(sendb, CRYPTO_CIPHERTEXTBYTES);
+        printbytes(key_b, CRYPTO_BYTES);
+
+        // Decapsulation
+        crypto_kem_dec(key_a, sendb, sk_a);
+        printbytes(key_a, CRYPTO_BYTES);
+
+        for (j = 0; j < CRYPTO_BYTES; j++) {
+            if (key_a[j] != key_b[j]) {
+                printf("ERROR\n");
+                return -1;
+            }
+        }*/
+        CSR_CLEAR_BITS(CSR_REG_MCOUNTINHIBIT, 0x1);
+        // Starting the performance counter
+        CSR_WRITE(CSR_REG_MCYCLE, 0);
+        //randombytes(coins_original, 2 * KYBER_SYMBYTES);
+        get_rnd_bytes(conditioning, coins, 2*KYBER_SYMBYTES);
+        CSR_READ(CSR_REG_MCYCLE, &cycles);
+        printf("Keypair done!\n Number of clock cycles : %d\n", cycles);
+    
+    }
+    return 0;
+}

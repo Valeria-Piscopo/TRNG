@@ -1,0 +1,7 @@
+0000000000000000000000000000000000000000 ac2efe6a6f6c0900815723573b3024a5a5dc8214 valeria.piscopo <valeria.piscopo@lugdush.(none)> 1707748464 +0100	clone: from https://git.vlsilab.polito.it/crypto_accelerators/trng-femu.git
+ac2efe6a6f6c0900815723573b3024a5a5dc8214 ff7093769ef6503fb66056d716404dacfd615f83 valeria.piscopo <s303313@studenti.polito.it> 1707817761 +0100	commit: vendoring trng
+ff7093769ef6503fb66056d716404dacfd615f83 1ffaeb434ad9b5a88a6a4d1a6369c0c3669b49c8 valeria.piscopo <s303313@studenti.polito.it> 1707818649 +0100	commit: trng+femu connection
+1ffaeb434ad9b5a88a6a4d1a6369c0c3669b49c8 92637492e8b96ddcfea5802289fbd6d7a80fdc51 valeria.piscopo <s303313@studenti.polito.it> 1707833434 +0100	commit: Update vendorization of trng
+92637492e8b96ddcfea5802289fbd6d7a80fdc51 3939f3c526fe3e3e2cdf9834c0c65fe08721ed1e valeria.piscopo <s303313@studenti.polito.it> 1707918618 +0100	commit: Update femu-trng connection
+3939f3c526fe3e3e2cdf9834c0c65fe08721ed1e f46c788f60f742da75dcd0b8519423c53c8a4818 valeria.piscopo <s303313@studenti.polito.it> 1707920817 +0100	commit: update femu+trng connection
+f46c788f60f742da75dcd0b8519423c53c8a4818 8f1af2ddd09a62167924dc66bd1605c18208934e valeria.piscopo <s303313@studenti.polito.it> 1707926842 +0100	commit: update connection femu-trng
